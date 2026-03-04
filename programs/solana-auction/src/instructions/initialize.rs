@@ -1,9 +1,14 @@
 use anchor_lang::prelude::*;
 
-#[derive(Accounts)]
-pub struct Initialize {}
-
-pub fn handler(ctx: Context<Initialize>) -> Result<()> {
-    msg!("Greetings from: {:?}", ctx.program_id);
-    Ok(())
-}
+#[account(
+    init,
+    payer = seller,
+    space = Auction::LEN,
+    seeds = [
+        b"auction",
+        seller.key().as_ref(),
+        &auction_id.to_le_bytes()
+    ],
+    bump
+)]
+pub auction: Account<'info, Auction>,

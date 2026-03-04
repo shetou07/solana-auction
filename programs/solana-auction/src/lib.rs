@@ -1,5 +1,11 @@
 use anchor_lang::prelude::*;
 
+pub mod state;
+pub mod instructions;
+pub mod errors;
+
+use instructions::*;
+
 declare_id!("FJTcpRNajvRKCkRhi984gxifiPWhgtmP7jqFCsuFC1QU");
 
 #[program]
@@ -13,85 +19,20 @@ pub mod solana_auction {
         end_time: i64,
         reserve_price: u64,
     ) -> Result<()> {
-        let clock = Clock::get()?;
-        let current_time = clock.unix_timestamp;
-
-        require!(end_time > start_time, AuctionError::InvalidTime);
-        require!(end_time > current_time, AuctionError::InvalidTime);
-        require!(reserve_price > 0, AuctionError::InvalidReserve);
-
-        let auction = &mut ctx.accounts.auction;
-
-        auction.seller = ctx.accounts.seller.key();
-        auction.start_time = start_time;
-        auction.end_time = end_time;
-        auction.reserve_price = reserve_price;
-        auction.highest_bid = 0;
-        auction.highest_bidder = Pubkey::default();
-        auction.is_finalized = false;
-        auction.bump = ctx.bumps.auction;
-
-        Ok(())
+        instructions::initialize::handler(ctx, start_time, end_time, reserve_price)
     }
 
     pub fn place_bid(
         ctx: Context<PlaceBid>,
         bid_amount: u64,
     ) -> Result<()> {
-        let auction = &mut ctx.accounts.auction;
-        let clock = Clock::get()?;
-        let now = clock.unix_timestamp;
-
-        require!(now >= auction.start_time, AuctionError::AuctionNotStarted);
-        require!(now < auction.end_time, AuctionError::AuctionEnded);
-        require!(!auction.is_finalized, AuctionError::AlreadyFinalized);
-        require!(bid_amount > auction.highest_bid, AuctionError::BidTooLow);
-        require!(bid_amount >= auction.reserve_price, AuctionError::BidTooLow);
-
-        // Transfer SOL from bidder to vault
-        let transfer_ix = anchor_lang::solana_program::system_instruction::transfer(
-            &ctx.accounts.bidder.key(),
-            &ctx.accounts.vault.key(),
-            bid_amount,
-        );
-
-        anchor_lang::solana_program::program::invoke(
-            &transfer_ix,
-            &[
-                ctx.accounts.bidder.to_account_info(),
-                ctx.accounts.vault.to_account_info(),
-            ],
-        )?;
-
-        // Refund previous bidder if exists
-        if auction.highest_bid > 0 {
-            **ctx.accounts.vault.to_account_info().try_borrow_mut_lamports()? -= auction.highest_bid;
-            **ctx.accounts.bidder.to_account_info().try_borrow_mut_lamports()? += auction.highest_bid;
-        }
-
-        auction.highest_bid = bid_amount;
-        auction.highest_bidder = ctx.accounts.bidder.key();
-
-        Ok(())
+        instructions::place_bid::handler(ctx, bid_amount)
     }
 
     pub fn finalize_auction(ctx: Context<FinalizeAuction>) -> Result<()> {
-        let auction = &mut ctx.accounts.auction;
-        let clock = Clock::get()?;
-        let now = clock.unix_timestamp;
-
-        require!(now >= auction.end_time, AuctionError::AuctionNotEnded);
-        require!(!auction.is_finalized, AuctionError::AlreadyFinalized);
-
-        if auction.highest_bid > 0 {
-            **ctx.accounts.vault.to_account_info().try_borrow_mut_lamports()? -= auction.highest_bid;
-            **ctx.accounts.seller.to_account_info().try_borrow_mut_lamports()? += auction.highest_bid;
-        }
-
-        auction.is_finalized = true;
-
-        Ok(())
+        instructions::finalize::handler(ctx)
     }
+<<<<<<< HEAD
 }
 
 #[account]
@@ -205,3 +146,6 @@ pub enum AuctionError {
     #[msg("Already finalized")]
     AlreadyFinalized,
 }
+=======
+}
+>>>>>>> a5b1595cd3244003227e612ceb63d9389c9aa697
