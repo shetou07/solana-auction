@@ -18,4 +18,6 @@ pub enum AuctionError {
     AlreadyFinalized,
     #[msg("Invalid previous bidder account")]
     InvalidPreviousBidder,
+    #[msg("Invalid highest bidder account")]
+    InvalidHighestBidder,
 }
