@@ -8,6 +8,7 @@ pub mod solana_auction {
 
     pub fn initialize_auction(
         ctx: Context<InitializeAuction>,
+        auction_id: u64,
         start_time: i64,
         end_time: i64,
         reserve_price: u64,
@@ -126,7 +127,7 @@ pub struct InitializeAuction<'info> {
         init,
         payer = seller,
         space = Auction::LEN,
-        seeds = [b"auction", seller.key().as_ref()],
+        seeds = [b"auction", seller.key().as_ref()],&auction_id.to_le_bytes()
         bump
     )]
     pub auction: Account<'info, Auction>,
