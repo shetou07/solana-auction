@@ -6,7 +6,7 @@ pub mod errors;
 
 use instructions::*;
 
-declare_id!("FJTcpRNajvRKCkRhi984gxifiPWhgtmP7jqFCsuFC1QU");
+declare_id!("BZMTC2BweEXZQBTxJyNZGKhRtocmihezzyR6fEWVV92m");
 
 #[program]
 pub mod solana_auction {

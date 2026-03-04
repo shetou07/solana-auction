@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::system_program;
 
 use crate::errors::AuctionError;
 use crate::state::auction::Auction;
@@ -23,8 +24,9 @@ pub struct InitializeAuction<'info> {
         space = 0,
         seeds = [b"vault", auction.key().as_ref()],
         bump
+        owner = system_::ID
     )]
-    pub vault: SystemAccount<'info>,
+    pub vault: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
