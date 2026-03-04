@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::system_program;
 
 use crate::errors::AuctionError;
 use crate::state::auction::Auction;
@@ -22,9 +23,11 @@ pub struct InitializeAuction<'info> {
         payer = seller,
         space = 0,
         seeds = [b"vault", auction.key().as_ref()],
-        bump
+        bump,
+        owner = system_program::ID
     )]
-    pub vault: SystemAccount<'info>,
+    /// CHECK: Vault PDA for SOL escrow; constrained by seeds and owner.
+    pub vault: UncheckedAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
